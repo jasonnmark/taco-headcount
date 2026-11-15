@@ -51,7 +51,7 @@
   textarea:focus,input:focus{border-color:var(--acc)}
   textarea{width:100%;resize:vertical;font:14px/1.6 ui-monospace,"SF Mono",Menlo,monospace}
   #paste{min-height:120px;max-height:260px}
-  #other{min-height:200px}
+  #other{min-height:200px}#otherk{min-height:90px}.olbl{display:block;font-size:13px;font-weight:650;margin:8px 0 4px}.olbl:first-of-type{margin-top:0}
   .hint{color:var(--mute);font-size:12.5px;margin-top:8px;border-top:1px solid var(--line);padding-top:8px}
   .urlrow{display:flex;gap:8px;margin-bottom:10px}
   .urlrow input{flex:1;min-width:0;font-size:13px}
@@ -193,14 +193,14 @@
     </div>
     <div class="card">
       <h2>Other guests <span>not on Evite</span></h2>
-      <textarea id="other" spellcheck="false" placeholder="Adults
-2 Neighbors
-1-3 Coworker +1
-
-Kids
-1 Neighbor kid"></textarea>
+      <label class="olbl" for="other">Adults</label>
+      <textarea id="other" spellcheck="false" placeholder="2 Neighbors
+1-3 Coworker +1"></textarea>
+      <label class="olbl" for="otherk">Kids</label>
+      <textarea id="otherk" spellcheck="false" placeholder="1 Neighbor kid
+0-2 Cousins"></textarea>
       <div class="meta" id="ometa"></div>
-      <div class="hint">A line starting with a number or range (<code>2</code>, <code>1-3</code>) is a guest line. Any other line starts a new group. A group named with "kids" counts as kids. Saves automatically.</div>
+      <div class="hint">One line per guest or group, starting with a number or range (<code>2</code>, <code>1-3</code>). Saves automatically.</div>
     </div>
   </div>
   <div class="col">
@@ -210,12 +210,12 @@ Kids
 <script>
 const KEY='headcount-v2', DEFAULT_URL='https://www.evite.com/my-events';
 const $=id=>document.getElementById(id);
-const E={url:$('url'),open:$('open'),paste:$('paste'),ya:$('ya'),yk:$('yk'),ma:$('ma'),mk:$('mk'),other:$('other'),ometa:$('ometa'),out:$('out'),emeta:$('emeta'),pmeta:$('pmeta'),saved:$('saved'),clear:$('clear'),backup:$('backup'),restore:$('restore'),evname:$('evname'),evdate:$('evdate'),evnew:$('evnew'),evdel:$('evdel'),evbtn:$('evbtn'),evmenu:$('evmenu'),evlist:$('evlist'),evform:$('evform'),evacts:$('evacts'),evok:$('evok'),evcancel:$('evcancel'),evedit:$('evedit'),evtname:$('evtname'),evtdate:$('evtdate'),syncst:$('syncst'),syncbtn:$('syncbtn'),syncbox:$('syncbox'),syncoff:$('syncoff'),syncon:$('syncon'),ghtoken:$('ghtoken'),ghconnect:$('ghconnect'),ghnow:$('ghnow'),ghoff:$('ghoff'),ghmsg:$('ghmsg')};
+const E={url:$('url'),open:$('open'),paste:$('paste'),ya:$('ya'),yk:$('yk'),ma:$('ma'),mk:$('mk'),other:$('other'),otherk:$('otherk'),ometa:$('ometa'),out:$('out'),emeta:$('emeta'),pmeta:$('pmeta'),saved:$('saved'),clear:$('clear'),backup:$('backup'),restore:$('restore'),evname:$('evname'),evdate:$('evdate'),evnew:$('evnew'),evdel:$('evdel'),evbtn:$('evbtn'),evmenu:$('evmenu'),evlist:$('evlist'),evform:$('evform'),evacts:$('evacts'),evok:$('evok'),evcancel:$('evcancel'),evedit:$('evedit'),evtname:$('evtname'),evtdate:$('evtdate'),syncst:$('syncst'),syncbtn:$('syncbtn'),syncbox:$('syncbox'),syncoff:$('syncoff'),syncon:$('syncon'),ghtoken:$('ghtoken'),ghconnect:$('ghconnect'),ghnow:$('ghnow'),ghoff:$('ghoff'),ghmsg:$('ghmsg')};
 const SKEY='headcount-v2-events';
 const newId=()=>'ev'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
-const blank=()=>({id:newId(),name:'',date:'',url:DEFAULT_URL,paste:'',ya:'',yk:'',ma:'',mk:'',other:'',perf:{},here:{}});
+const blank=()=>({id:newId(),name:'',date:'',url:DEFAULT_URL,paste:'',ya:'',yk:'',ma:'',mk:'',other:'',otherk:'',perf:{},here:{}});
 let store={cur:'',list:[],deleted:{}}, state=blank(), loadWarn='';
-function fixEv(e){for(const k of ['perf','here'])if(!e[k]||typeof e[k]!=='object'||Array.isArray(e[k]))e[k]={};for(const k of ['name','date','paste','other','ya','yk','ma','mk'])if(typeof e[k]!=='string')e[k]=e[k]==null?'':String(e[k]);if(typeof e.url!=='string')e.url=DEFAULT_URL;e.id=e.id&&!BAD(String(e.id))?String(e.id):newId();if(!e.t||typeof e.t!=='object'||Array.isArray(e.t))e.t={};for(const k in e.t){if(BAD(k)||!(+e.t[k]))delete e.t[k];else seen(e.t[k])}e.perf=own({},e.perf);e.here=own({},e.here);e.t=own({},e.t);delete e.updated;applyClear(e);return e}
+function fixEv(e){for(const k of ['perf','here'])if(!e[k]||typeof e[k]!=='object'||Array.isArray(e[k]))e[k]={};for(const k of ['name','date','paste','other','otherk','ya','yk','ma','mk'])if(typeof e[k]!=='string')e[k]=e[k]==null?'':String(e[k]);if(typeof e.url!=='string')e.url=DEFAULT_URL;e.id=e.id&&!BAD(String(e.id))?String(e.id):newId();if(!e.t||typeof e.t!=='object'||Array.isArray(e.t))e.t={};for(const k in e.t){if(BAD(k)||!(+e.t[k]))delete e.t[k];else seen(e.t[k])}e.perf=own({},e.perf);e.here=own({},e.here);e.t=own({},e.t);delete e.updated;applyClear(e);return e}
 // first run: adopt the single old save as event one
 function load(){
   let s=null,old=null,raw=null;store={cur:'',list:[],deleted:{}};
@@ -232,7 +232,7 @@ function load(){
 }
 // clock: never behind anything already seen, so wrong device times can't win
 let clock=0;const seen=n=>{n=+n||0;if(n>clock&&n<Date.now()+3e5)clock=n};const tick=()=>{clock=Math.max(Date.now(),clock+1);return clock};
-const FIELDS=['name','date','url','paste','ya','yk','ma','mk','other'];
+const FIELDS=['name','date','url','paste','ya','yk','ma','mk','other','otherk'];
 const BAD=k=>k==='__proto__'||k==='constructor'||k==='prototype';
 const own=(dst,src)=>{for(const k of Object.keys(src))if(!BAD(k))dst[k]=src[k];return dst};
 const evStamp=e=>{let m=0;for(const k in e.t)m=Math.max(m,+e.t[k]||0);return m};
@@ -301,23 +301,24 @@ function pick(ev,key,listKey){
 }
 
 /* ---------- Other-guests parser (v1 syntax) ---------- */
-function parseOther(text){
+function parseOther(text,kid){
   const groups=[];let cur=null;
   for(const raw of text.split('\n')){
     const line=raw.trim(); if(!line) continue;
     const m=line.match(/^(\d+)\s*(?:[-–—]|to)?\s*(\d+)?\s*(.*)$/);
     if(m && /^\d/.test(line)){
       let lo=+m[1],hi=m[2]!==undefined?+m[2]:lo; if(hi<lo)[lo,hi]=[hi,lo];
-      if(!cur){cur={name:'Guests',items:[]};groups.push(cur)}
+      if(!cur){cur={name:kid?'Kids':'Adults',items:[],kids:kid};groups.push(cur)}
       cur.items.push({lo,hi,label:m[3]||''});
     }else{
       const name=line.replace(/\s*\d+\s*[-–—]\s*\d+\s*$|\s*\d+\s*$/,'').trim()||line;
       if(/^headcount$/i.test(name)) continue;
-      cur={name,items:[],notEating:/not\s*eating/i.test(name),kids:/kid|child/i.test(name)};groups.push(cur);
+      cur={name,items:[],kids:kid};groups.push(cur);
     }
   }
   return groups.filter(g=>g.items.length);
 }
+const otherGroups=()=>[...parseOther(state.other,false),...parseOther(state.otherk,true)];
 
 /* ---------- Render ---------- */
 let ev=parseEvite('');
@@ -387,7 +388,7 @@ function buildRows(){
   const xy=num(state.ya)+num(state.yk)-cy.adults-cy.kids,xm=num(state.ma)+num(state.mk)-cm.adults-cm.kids;
   if(xy>0)push({key:'e:__yes',name:'Evite yes (not in the pasted list)',person:false,status:'Yes',chips:[`${xy} people`],lo:xy,hi:xy});
   if(xm>0)push({key:'e:__maybe',name:'Evite maybe (names not pasted)',person:false,status:'Maybe',chips:[`${xm} people`],lo:0,hi:xm});
-  for(const g of parseOther(state.other))for(const i of g.items){
+  for(const g of otherGroups())for(const i of g.items){
     const name=i.label||g.name;
     push({key:'o:'+(nkey(name)||name.toLowerCase()),name,person:true,kid:!!g.kids,status:'',chips:[g.name],lo:i.lo,hi:i.hi,comment:'',hint:false});
   }
@@ -418,7 +419,7 @@ function bump(key,which){
 const ICON_DEF='<span class="ic">🎵</span>', ICON_MAYBE='<span class="ic">🎵<i class="mq">?</i></span>', ICON_HERE='<span class="ic">✅</span>';
 function render(){
   const ya=num(state.ya),yk=num(state.yk),ma=num(state.ma),mk=num(state.mk);
-  const gs=parseOther(state.other);
+  const gs=otherGroups();
   // warn about likely double counting
   {const seen=new Map(),dup=new Set(),evl=[];
    for(const g of gs)for(const it of g.items){const k=(g.name+'|'+it.label).toLowerCase().replace(/\s+/g,' ').trim();if(seen.has(k))dup.add(it.label||g.name);seen.set(k,1);if(/\bevite\b/i.test(it.label))evl.push(it.lo===it.hi?it.lo+' '+it.label:it.lo+'-'+it.hi+' '+it.label)}
@@ -479,6 +480,7 @@ E.out.addEventListener('click',e=>{
 E.paste.addEventListener('input',()=>{applyPaste();render();save('paste','ya','yk','ma','mk')});
 for(const k of ['ya','yk','ma','mk'])E[k].addEventListener('input',()=>{state[k]=E[k].value;render();save(k)});
 E.other.addEventListener('input',()=>{state.other=E.other.value;render();save('other')});
+E.otherk.addEventListener('input',()=>{state.otherk=E.otherk.value;render();save('otherk')});
 E.url.addEventListener('input',()=>{state.url=E.url.value.trim();setUrl();save('url')});
 function setUrl(){const u=/^https?:\/\//i.test(state.url)?state.url:DEFAULT_URL;E.open.href=u;E.open.title=u}
 let armed=null;
@@ -488,8 +490,8 @@ E.clear.addEventListener('click',()=>{
   closeMenu();
   disarmClear();
   Object.assign(state,{paste:'',ya:'',yk:'',ma:'',mk:'',other:''});
-  E.paste.value='';E.other.value='';for(const k of ['ya','yk','ma','mk'])E[k].value='';
-  ev=parseEvite('');E.pmeta.textContent='Nothing pasted yet.';render();save('paste','ya','yk','ma','mk','other','clr');applyClear(state);render();E.paste.focus();
+  E.paste.value='';E.other.value='';E.otherk.value='';for(const k of ['ya','yk','ma','mk'])E[k].value='';
+  ev=parseEvite('');E.pmeta.textContent='Nothing pasted yet.';render();save('paste','ya','yk','ma','mk','other','otherk','clr');applyClear(state);render();E.paste.focus();
 });
 E.backup.addEventListener('click',async()=>{
   closeMenu();
@@ -524,14 +526,14 @@ const sv=(el,v)=>{if(el.value!==v)el.value=v};
 // same event changed elsewhere: update only fields that differ
 function refreshEvent(){
   sv(E.url,state.url===DEFAULT_URL?'':state.url);setUrl();
-  sv(E.paste,state.paste);sv(E.other,state.other);for(const k of ['ya','yk','ma','mk'])sv(E[k],state[k]);
+  sv(E.paste,state.paste);sv(E.other,state.other);sv(E.otherk,state.otherk);for(const k of ['ya','yk','ma','mk'])sv(E[k],state[k]);
   ev=parseEvite(state.paste);if(ev.found)E.pmeta.innerHTML=pasteMsg();else E.pmeta.textContent='Nothing pasted yet.';
   renderEvBar();render();
 }
 function showEvent(){
   openTip=null;closeMenu();disarmDel();disarmClear();
   E.url.value=state.url===DEFAULT_URL?'':state.url;setUrl();
-  E.paste.value=state.paste;E.other.value=state.other;
+  E.paste.value=state.paste;E.other.value=state.other;E.otherk.value=state.otherk;
   for(const k of ['ya','yk','ma','mk'])E[k].value=state[k];
   ev=parseEvite(state.paste);
   if(ev.found)E.pmeta.innerHTML=pasteMsg();else E.pmeta.textContent='Nothing pasted yet.';
@@ -596,6 +598,8 @@ window.addEventListener('storage',e=>{
   let o=null;try{o=JSON.parse(e.newValue||'null')}catch(x){}
   if(!o||!Array.isArray(o.list))return;
   const pending=!!st;mergeInto({events:o.list,deleted:o.deleted,memory:{}});if(pending)save();
+  // an older app copy dropped the Kids box: write ours back
+  else if(o.list.some(r=>r&&typeof r==='object'&&!('otherk' in r)&&store.list.some(l=>l.id===r.id&&l.otherk)))flush(true);
 });
 /* ---------- GitHub sync ---------- */
 const GKEY='headcount-github', REPO='jasonnmark/taco-headcount-data', FILE='headcount.json';
@@ -644,7 +648,7 @@ function mergeInto(remote){
   const del=cleanDel(remote.deleted);let delChanged=false;
   for(const k in del)if((del[k]||0)>(store.deleted[k]||0)){store.deleted[k]=del[k];delChanged=true}
   const byId=new Map(store.list.map(e=>[e.id,e]));
-  const blankEv=e=>!evStamp(e)&&!e.name.trim()&&!e.paste.trim()&&!e.other.trim()&&!e.ya&&!e.yk&&!e.ma&&!e.mk;
+  const blankEv=e=>!evStamp(e)&&!e.name.trim()&&!e.paste.trim()&&!e.other.trim()&&!e.otherk.trim()&&!e.ya&&!e.yk&&!e.ma&&!e.mk;
   const prevCur=state, prevJson=JSON.stringify(state);let changed=delChanged;
   const incoming=(remote.events||[]).filter(r=>r&&typeof r==='object').map(r=>fixEv(own(blank(),r)));
   if(incoming.length)for(const l of store.list)if(blankEv(l)&&!incoming.some(r=>r.id===l.id)){byId.delete(l.id);changed=true}
