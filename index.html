@@ -91,7 +91,7 @@
   .hero.c{background:var(--heroC);border-color:transparent}.hero.c .num{color:var(--heroCink)}.hero.c .lbl,.hero.c .sub{color:var(--heroCmute)}.hero.c .sub b{color:var(--heroCink)}
   .hero.b{background:var(--heroB);border-color:transparent}.hero.b .num{color:var(--heroBink)}.hero.b .lbl,.hero.b .sub{color:var(--heroBmute)}.hero.b .sub b{color:var(--heroBink)}
   .sec{margin-top:12px}
-  .sec h3{font-size:14px;margin:0 0 4px;display:flex;justify-content:space-between;font-weight:650}
+  .sec h3{font-size:14px;margin:14px 0 4px;display:flex;justify-content:space-between;font-weight:650}
   .sec h3 span{font-variant-numeric:tabular-nums}
   .row{display:flex;justify-content:space-between;gap:10px;color:var(--mute);font-size:13.5px;padding:2px 0;border-bottom:1px dashed var(--line)}
   .row b{color:var(--ink);font-weight:500;font-variant-numeric:tabular-nums;min-width:48px;text-align:right;white-space:nowrap}
@@ -122,7 +122,7 @@
   .person .note{cursor:help}
   .person.up[data-tip]::after{top:auto;bottom:100%}
   .person[data-tip]:hover::after,.person[data-tip]:focus-visible::after,.person.tip-open[data-tip]::after{content:attr(data-tip);position:absolute;left:4px;top:100%;z-index:5;max-width:min(440px,90vw);background:var(--ink);color:var(--bg);font-size:12.5px;line-height:1.4;padding:8px 10px;border-radius:8px;white-space:pre-wrap;box-shadow:0 4px 14px rgba(0,0,0,.18);pointer-events:none;font-style:italic}
-  .listhead{color:var(--mute);font-size:12px;margin:-2px 0 6px}
+  .listhead{color:var(--mute);font-size:12px;margin:-2px 0 2px}
   .empty{color:var(--mute)}
 </style>
 </head>
@@ -198,12 +198,9 @@
 1-3 Coworker +1
 
 Kids
-1 Neighbor kid
-
-Not Eating
-1 Driver"></textarea>
+1 Neighbor kid"></textarea>
       <div class="meta" id="ometa"></div>
-      <div class="hint">A line starting with a number or range (<code>2</code>, <code>1-3</code>) is a guest line. Any other line starts a new group. A group named with "kids" counts as kids; one named "not eating" counts in the total but not the eating count. Saves automatically.</div>
+      <div class="hint">A line starting with a number or range (<code>2</code>, <code>1-3</code>) is a guest line. Any other line starts a new group. A group named with "kids" counts as kids. Saves automatically.</div>
     </div>
   </div>
   <div class="col">
@@ -382,7 +379,7 @@ function buildRows(){
   for(const g of gs){
     const ea=g.extras.filter(e=>e.type==='Adult').length,ek=g.extras.filter(e=>e.type==='Kid').length,n=1+g.extras.length;
     const unnamed=isContact(g.name);
-    push({key:'e:'+(unnamed?'__unnamed':nkey(g.name)),name:unnamed?'Unnamed guest':g.name,person:!unnamed,status:g.status,comment:g.comment,hint:MUSIC.test(g.comment),
+    push({key:'e:'+(unnamed?'__unnamed':nkey(g.name)),name:unnamed?'Unnamed guest':g.name,person:!unnamed,kid:g.type==='Kid',status:g.status,comment:g.comment,hint:MUSIC.test(g.comment),
       chips:[g.type,ea?`+${ea} adult${ea>1?'s':''}`:'',ek?`+${ek} kid${ek>1?'s':''}`:''].filter(Boolean),lo:g.status==='Yes'?n:0,hi:n});
   }
   // People in the Evite totals but not named in the paste (e.g. Maybe when the list is filtered to Yes)
@@ -392,7 +389,7 @@ function buildRows(){
   if(xm>0)push({key:'e:__maybe',name:'Evite maybe (names not pasted)',person:false,status:'Maybe',chips:[`${xm} people`],lo:0,hi:xm});
   for(const g of parseOther(state.other))for(const i of g.items){
     const name=i.label||g.name;
-    push({key:'o:'+(nkey(name)||name.toLowerCase()),name,person:true,status:'',chips:[g.name,g.notEating?'not eating':''].filter(Boolean),lo:i.lo,hi:i.hi,comment:'',hint:false});
+    push({key:'o:'+(nkey(name)||name.toLowerCase()),name,person:true,kid:!!g.kids,status:'',chips:[g.name],lo:i.lo,hi:i.hi,comment:'',hint:false});
   }
   return rows;
 }
@@ -429,21 +426,22 @@ function render(){
    if(dup.size)w.push(`Listed twice, so counted twice: ${[...dup].map(esc).join(', ')}. Delete the repeats. (E208)`);
    if(evl.length&&(num(state.ya)||num(state.yk)||num(state.ma)||num(state.mk)))w.push(`Evite people are already counted from the Evite box above. Remove ${[...new Set(evl)].map(x=>'“'+esc(x.trim())+'”').join(' and ')}. (E209)`);
    E.ometa.innerHTML=w.map(x=>`<div class="bad">⚠️ ${x}</div>`).join('')}
-  let tLo=ya+yk,tHi=ya+yk+ma+mk,eLo=tLo,eHi=tHi,aLo=ya,aHi=ya+ma,kLo=yk,kHi=yk+mk;
+  let tLo=ya+yk,tHi=ya+yk+ma+mk,aLo=ya,aHi=ya+ma,kLo=yk,kHi=yk+mk;
   for(const g of gs){
     const lo=g.items.reduce((s,i)=>s+i.lo,0),hi=g.items.reduce((s,i)=>s+i.hi,0);
-    tLo+=lo;tHi+=hi;if(!g.notEating){eLo+=lo;eHi+=hi}
+    tLo+=lo;tHi+=hi;
     if(g.kids){kLo+=lo;kHi+=hi}else{aLo+=lo;aHi+=hi}
   }
   rowsCache=buildRows();
-  let perf=0,pMaybe=0,hinted=0,here=0,hereRows=0,html='',froze=false;
-  for(const r of rowsCache){
+  let perf=0,pMaybe=0,hinted=0,here=0,hereRows=0,html='',htmlK='',froze=false;
+  const ordered=[...rowsCache.filter(r=>!r.kid),...rowsCache.filter(r=>r.kid)];
+  for(const r of ordered){
     const {c,q}=perfState(r); perf+=c; pMaybe+=q;
     if((c||q)&&!Object.prototype.hasOwnProperty.call(state.perf,r.key)){state.perf[r.key]={c,q};froze=true} if(r.hint&&!c&&!q)hinted++;
     const h=hereState(r); here+=h; if(h)hereRows++;
-    const idx=rowsCache.indexOf(r), up=rowsCache.length>6&&idx>=rowsCache.length-3;
+    const idx=ordered.indexOf(r), up=ordered.length>6&&idx>=ordered.length-3;
     const badge=(n)=>n&&r.hi>1?`<span class="k">${n}</span>`:'';
-    html+=`<div class="person${up?' up':''}${openTip===r.key?' tip-open':''}" data-key="${esc(r.key)}"${r.comment?` data-tip="${esc(r.comment)}"`:''}>`+
+    const row=`<div class="person${up?' up':''}${openTip===r.key?' tip-open':''}" data-key="${esc(r.key)}"${r.comment?` data-tip="${esc(r.comment)}"`:''}>`+
       `<div class="tg"><button type="button" class="pc hr${h?' on':''}" data-w="h" aria-label="Arrived, ${h} of ${r.hi}" title="Arrived: ${h} of ${r.hi}">${ICON_HERE}${badge(h)}</button>`+
       `<button type="button" class="pc${c?' on':''}" data-w="c" aria-label="Performing, ${c} of ${r.hi}" title="Performing: ${c} of ${r.hi}">${ICON_DEF}${badge(c)}</button>`+
       `<button type="button" class="pc${q?' on':''}" data-w="q" aria-label="Maybe performing, ${q} of ${r.hi}" title="Maybe performing: ${q} of ${r.hi}">${ICON_MAYBE}${badge(q)}</button></div>`+
@@ -451,17 +449,20 @@ function render(){
       (r.status==='Maybe'?'<span class="chip mb">maybe</span>':'')+
       (r.hint?'<span class="mhint" title="Mentioned music in their reply">🎵</span>':'')+
       `</div><b class="cnt">${fmt(r.lo,r.hi)}</b></div>`;
+    if(r.kid)htmlK+=row;else html+=row;
   }
   const skipped=ev.guests.filter(g=>!(g.status==='Yes'||g.status==='Maybe')).length;
   const top=`<div class="total">
     <div class="big hero a"><span class="wm">🌮</span><div class="lbl">Total people</div><div class="num">${fmt(tLo,tHi)}</div>
-      <div class="sub">~${mid(tLo,tHi)} likely</div><div class="sub"><b>${fmt(aLo,aHi)}</b> adults</div><div class="sub"><b>${fmt(kLo,kHi)}</b> kids</div><div class="sub"><b>${fmt(eLo,eHi)}</b> eating</div></div>
+      <div class="sub">~${mid(tLo,tHi)} likely</div><div class="sub"><b>${fmt(aLo,aHi)}</b> adults</div><div class="sub"><b>${fmt(kLo,kHi)}</b> kids</div></div>
     <div class="big hero b"><span class="wm">🎵</span><div class="lbl">Music</div><div class="num">${fmt(perf,perf+pMaybe)}</div>
       <div class="sub">${perf+pMaybe?`<b>${perf}</b> definite`:'tap 🎵 by a name'}</div>${pMaybe?`<div class="sub"><b>${pMaybe}</b> maybe</div>`:''}${hinted?`<div class="sub"><b>${hinted}</b> more mentioned music</div>`:''}</div>
     <div class="big hero c"><span class="wm">✅</span><div class="lbl">Here</div><div class="num">${here}</div>
       <div class="sub">${here?`<b>${hereRows}</b> ${hereRows===1?'party':'parties'} arrived`:'tap ✅ as people arrive'}</div>${here?`<div class="sub"><b>${Math.max(tLo-here,0)}–${Math.max(tHi-here,0)}</b> still to come</div>`:''}</div>
   </div>`;
-  const list=rowsCache.length?`<div class="sec"><h3>Invite list<span>${rowsCache.length}</span></h3><div class="listhead">Tap ✅ once per person who arrives, 🎵 per performer, 🎵? per maybe; taps past the group size reset to 0. Tap 💬 for their Evite note.${skipped?` ${skipped} no / no-reply not shown.`:''}</div>${html}</div>`:'';
+  const nA=ordered.filter(r=>!r.kid).length,nK=ordered.length-nA;
+  const list=rowsCache.length?`<div class="sec"><div class="listhead">Tap ✅ once per person who arrives, 🎵 per performer, 🎵? per maybe; taps past the group size reset to 0. Tap 💬 for their Evite note. Families are listed under whoever replied.${skipped?` ${skipped} no / no-reply not shown.`:''}</div>`+
+    (nA?`<h3>Adults<span>${nA}</span></h3>${html}`:'')+(nK?`<h3>Kids<span>${nK}</span></h3>${htmlK}`:'')+`</div>`:'';
   E.out.innerHTML=(tHi>0||gs.length)?top+list:'<div class="empty">Paste the Evite page or type other guests to start.</div>';
   renderMeta();
   if(froze)save();
